@@ -22,7 +22,11 @@ export default defineConfig({
       external: ['vue', 'primevue/datatable', 'primevue/virtualscroller', 'primevue/column', 'primevue/button'],
       output: {
         globals: {
-          vue: 'Vue'
+          vue: 'Vue',
+          'primevue/datatable': 'PrimeVueDataTable',
+          'primevue/column': 'PrimeVueColumn',
+          'primevue/virtualscroller': 'PrimeVueVirtualScroller',
+          'primevue/button': 'PrimeVueButton'
         }
       }
     },
