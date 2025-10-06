@@ -1,5 +1,5 @@
 <template>
-  <svg :width="width" :height="height" class="pointer-events-none absolute inset-0">
+  <svg :width="contentWidth" :height="contentHeight" class="pointer-events-none absolute inset-0">
     <defs>
       <marker
         id="arrowhead"
@@ -41,18 +41,27 @@ const props = defineProps({
     type: Object as PropType<Project>,
     required: true
   },
-  scale: {
+  pixelsPerMs: {
     type: Number,
     required: true
   },
   rowHeight: {
     type: Number,
     required: true
+  },
+  timelineStart: {
+    type: Date,
+    required: true
+  },
+  contentWidth: {
+    type: Number,
+    required: true
+  },
+  contentHeight: {
+    type: Number,
+    required: true
   }
 })
-
-const width = computed(() => 2000)
-const height = computed(() => props.tasks.length * props.rowHeight)
 
 const taskIndex = computed(() => {
   const index = new Map<string, number>()
@@ -62,7 +71,7 @@ const taskIndex = computed(() => {
 
 const layout = computed(() => {
   const paths: Array<{ id: string; path: string; class: string }> = []
-  const startTime = new Date(Math.min(...props.tasks.map((task) => new Date(task.start).getTime())))
+  const startTime = props.timelineStart.getTime()
 
   props.dependencies.forEach((dependency) => {
     const predecessor = props.tasks.find((task) => task.id === dependency.predecessorId)
@@ -72,9 +81,9 @@ const layout = computed(() => {
     const successorIndex = taskIndex.value.get(successor.id) ?? 0
     const predecessorEnd = new Date(predecessor.finish).getTime()
     const successorStart = new Date(successor.start).getTime()
-    const x1 = (predecessorEnd - startTime.getTime()) * props.scale
+    const x1 = (predecessorEnd - startTime) * props.pixelsPerMs
     const y1 = predecessorIndex * props.rowHeight + props.rowHeight / 2
-    const x2 = (successorStart - startTime.getTime()) * props.scale
+    const x2 = (successorStart - startTime) * props.pixelsPerMs
     const y2 = successorIndex * props.rowHeight + props.rowHeight / 2
     const dx = (x2 - x1) / 2
     const path = `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`

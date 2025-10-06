@@ -17,7 +17,6 @@
           :project="modelValue.project"
           :options="optionsComputed"
           :stats="state.stats"
-          @scrollToTask="handleScrollToTask"
         />
       </section>
     </div>
@@ -141,10 +140,6 @@ const themeClass = computed(() => {
 const handleTaskUpdate = (task: Task) => {
   api.updateTask(task.id, task)
   void recalculate()
-}
-
-const handleScrollToTask = (taskId: string) => {
-  emit('selectionChanged', { ids: [taskId] })
 }
 
 const exposeApi = {

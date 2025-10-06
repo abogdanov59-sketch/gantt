@@ -1,14 +1,15 @@
 <template>
-  <div class="h-full">
+  <div class="flex h-full flex-col">
     <header class="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-4 py-2 dark:border-slate-700 dark:bg-slate-800">
       <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500">Work Breakdown Structure</h2>
       <span v-if="loading" class="text-xs text-slate-400">Recalculating...</span>
     </header>
-    <div class="h-[calc(100%-40px)]">
+    <div class="flex-1 min-h-0">
       <DataTable
         :value="tasks"
         data-key="id"
         scrollable
+        scroll-height="flex"
         table-style="min-width: 100%"
         class="h-full"
       >
@@ -24,8 +25,20 @@
             </div>
           </template>
         </Column>
-        <Column field="start" header="Start" :style="{ width: '160px' }" />
-        <Column field="finish" header="Finish" :style="{ width: '160px' }" />
+        <Column field="start" header="Start" :style="{ width: '200px' }">
+          <template #body="slotProps">
+            <span class="block truncate" :title="formatDateTime(slotProps.data.start)">
+              {{ formatDateTime(slotProps.data.start) }}
+            </span>
+          </template>
+        </Column>
+        <Column field="finish" header="Finish" :style="{ width: '200px' }">
+          <template #body="slotProps">
+            <span class="block truncate" :title="formatDateTime(slotProps.data.finish)">
+              {{ formatDateTime(slotProps.data.finish) }}
+            </span>
+          </template>
+        </Column>
         <Column field="duration" header="Duration (m)" :style="{ width: '120px' }" />
         <Column
           v-for="column in columns"
@@ -52,6 +65,7 @@
 
 <script setup lang="ts">
 import { type PropType } from 'vue'
+import { format } from 'date-fns'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import type { ColumnDef, SchedulerMessage, Task } from '@/types'
@@ -76,6 +90,15 @@ defineProps({
 })
 
 defineEmits(['update:task'])
+
+const DATE_FORMAT = 'dd.MM.yyyy HH:mm:ss'
+
+const formatDateTime = (value?: string | Date) => {
+  if (!value) return ''
+  const date = typeof value === 'string' ? new Date(value) : value
+  if (Number.isNaN(date.getTime())) return ''
+  return format(date, DATE_FORMAT)
+}
 
 const getColumnValue = (task: Task, column: ColumnDef) => {
   if (column.formatter) return column.formatter(task)
