@@ -17,6 +17,36 @@ To run the automated tests:
 npm test
 ```
 
+### Troubleshooting installs and tests
+
+The project depends on the PrimeVue component suite and its theme package. If `npm install` fails with
+messages such as `E401: Unable to authenticate, need: Bearer authorization_uri` or `registry access to
+@primevue/themes is forbidden`, ensure the following:
+
+1. You are signed in to npm and have access to the PrimeVue packages.
+2. Your `.npmrc` or environment variables point to the public npm registry for the PrimeVue scope:
+
+   ```bash
+   npm config set @primevue:registry https://registry.npmjs.org/
+   ```
+
+3. If your organization mirrors npm packages, add the appropriate auth token:
+
+   ```bash
+   npm set //registry.npmjs.org/:_authToken="<YOUR_TOKEN>"
+   ```
+
+After dependencies install successfully, run the full verification suite before opening a pull request:
+
+```bash
+npm run lint
+npm run type-check
+npm test
+npm run build
+```
+
+Document any deviations or environment-specific workarounds in your change summary so others can reproduce the steps.
+
 ## Usage Example
 
 ```ts
