@@ -1,9 +1,8 @@
-import { reactive } from 'vue'
 import type { CalculationResult, GanttModelValue, SchedulerOptions } from '@/types'
 import { createSchedulerWorker } from '@/worker/createSchedulerWorker'
 
 export const useSchedulerWorker = () => {
-  const worker = reactive(createSchedulerWorker())
+  const worker = createSchedulerWorker()
 
   const calculate = async (
     model: GanttModelValue,

@@ -7,6 +7,18 @@ import type {
 } from '@/types'
 import { calculateSchedule } from '@/utils/scheduler'
 
+const cloneForWorker = <T>(value: T): T => {
+  const structuredCloneFn = (
+    globalThis as { structuredClone?: <S>(input: S) => S }
+  ).structuredClone
+
+  if (typeof structuredCloneFn === 'function') {
+    return structuredCloneFn(value)
+  }
+
+  return JSON.parse(JSON.stringify(value)) as T
+}
+
 export interface SchedulerWorkerApi {
   calculate: (
     model: GanttModelValue,
@@ -42,7 +54,10 @@ export const createSchedulerWorker = (): SchedulerWorkerApi => {
       worker.addEventListener('error', handleError)
       const message: SchedulerWorkerMessage = {
         type: 'calculate',
-        payload: { model, options }
+        payload: {
+          model: cloneForWorker(model),
+          options: cloneForWorker(options)
+        }
       }
       worker.postMessage(message)
     })
