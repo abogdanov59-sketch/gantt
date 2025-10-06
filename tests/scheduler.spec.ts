@@ -76,4 +76,21 @@ describe('calculateSchedule', () => {
     const critical = result.tasks.filter((task) => task.flags?.critical)
     expect(critical.map((task) => task.id)).toContain('t2')
   })
+
+  it('flags near-critical and late tasks based on threshold and status date', () => {
+    const model = structuredClone(baseModel)
+    model.project.statusDate = '2025-01-09T00:00:00Z'
+    model.dependencies[0].lag = { value: 1, unit: 'd' }
+    const result = calculateSchedule(model, { ...options, nearCriticalThresholdDays: 5 })
+    const task2 = result.tasks.find((task) => task.id === 't2')
+    expect(task2?.flags?.nearCritical).toBe(true)
+    expect(task2?.flags?.late).toBe(true)
+  })
+
+  it('returns cycle detection message when dependencies loop', () => {
+    const model = structuredClone(baseModel)
+    model.dependencies.push({ id: 'd-cycle', predecessorId: 't2', successorId: 't1', type: 'FS' })
+    const result = calculateSchedule(model, options)
+    expect(result.messages.some((message) => message.code === 'E_CYCLE_DETECTED')).toBe(true)
+  })
 })

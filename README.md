@@ -50,6 +50,10 @@ app.use(PrimeVue)
 app.mount('#app')
 ```
 
+Additional runnable examples covering basic usage, resource allocation, and progress tracking
+are available under [`examples/`](examples/README.md). Each example has its own Vite config so
+you can launch them individually from the project root.
+
 ## Scripts
 
 - `pnpm dev` – run the example playground (coming soon).
