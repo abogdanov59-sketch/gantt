@@ -15,11 +15,12 @@
     "types": ["node", "vitest", "vue"],
     "baseUrl": ".",
     "paths": {
-      "@/": ["./src/*"],
+      "@": ["./src"],
+      "@/*": ["./src/*"],
       "@/components/*": ["./src/components/*"],
       "@/composables/*": ["./src/composables/*"],
       "@/utils/*": ["./src/utils/*"],
-      "@/types": ["./src/types"]
+      "@/types": ["./src/types.ts"]
     }
   }
 }

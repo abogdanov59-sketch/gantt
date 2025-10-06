@@ -3,21 +3,28 @@ import vue from '@vitejs/plugin-vue'
 import { fileURLToPath } from 'node:url'
 import { resolve } from 'node:path'
 
-const rootDir = fileURLToPath(new URL('.', import.meta.url))
+const exampleRoot = fileURLToPath(new URL('./', import.meta.url))
+const projectRoot = fileURLToPath(new URL('../../', import.meta.url))
 
 export default defineConfig({
   plugins: [vue()],
-  root: rootDir,
+  root: exampleRoot,
   resolve: {
     alias: {
-      '@gantt/module': resolve(rootDir, '../../src')
+      '@': resolve(projectRoot, 'src'),
+      '@gantt/module': resolve(projectRoot, 'src')
+    }
+  },
+  server: {
+    fs: {
+      allow: [exampleRoot, projectRoot]
     }
   },
   build: {
     outDir: 'dist',
     emptyOutDir: true,
     rollupOptions: {
-      input: resolve(rootDir, 'index.html')
+      input: resolve(exampleRoot, 'index.html')
     }
   }
 })

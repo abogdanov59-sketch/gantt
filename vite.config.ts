@@ -7,6 +7,11 @@ const rootDir = fileURLToPath(new URL('.', import.meta.url))
 
 export default defineConfig({
   plugins: [vue()],
+  resolve: {
+    alias: {
+      '@': resolve(rootDir, 'src')
+    }
+  },
   build: {
     lib: {
       entry: resolve(rootDir, 'src/index.ts'),
