@@ -1,9 +1,68 @@
 # Gantt Module
 
-This repository hosts the technical specification and (future) implementation for an isolated, reusable Gantt Chart module tailored for construction scheduling workflows.
+This repository contains an installable Vue 3 library that implements the construction-focused Gantt chart module described in the accompanying [technical specification](docs/technical-spec.md). The package bundles grid, timeline, worker-based CPM engine, and supporting utilities so it can be embedded in any PrimeVue + TailwindCSS project.
 
-## Documentation
-- [Technical Specification](docs/technical-spec.md)
+## Getting Started
 
-## Status
-The project currently captures requirements only. Implementation work—including Vue 3 components, scheduling engine, and supporting tooling—will be developed in subsequent phases as outlined in the specification.
+```bash
+pnpm install
+pnpm run build
+```
+
+To run the automated tests:
+
+```bash
+pnpm test
+```
+
+## Usage Example
+
+```ts
+import { createApp, ref } from 'vue'
+import PrimeVue from 'primevue/config'
+import { GanttModule } from '@gantt/construction-scheduler'
+import '@gantt/construction-scheduler/dist/style.css'
+
+const app = createApp({
+  setup() {
+    const model = ref({
+      project: {
+        id: 'p1',
+        name: 'Site A',
+        calendarId: 'cal_proj',
+        statusDate: '2025-01-31T00:00:00Z',
+        settings: {
+          progressMode: 'duration',
+          nearCriticalThresholdDays: 2
+        }
+      },
+      calendars: [/* ... */],
+      tasks: [/* ... */],
+      dependencies: [/* ... */]
+    })
+
+    return { model }
+  },
+  template: `<GanttModule v-model="model" />`
+})
+
+app.use(PrimeVue)
+app.mount('#app')
+```
+
+## Scripts
+
+- `pnpm dev` – run the example playground (coming soon).
+- `pnpm build` – build the distributable library bundle with Vite.
+- `pnpm test` – run Vitest unit tests for the scheduling engine.
+- `pnpm type-check` – validate the TypeScript definitions.
+
+## Project Structure
+
+- `src/components` – Vue components composing the grid, timeline, dependency layer, and toolbar hooks.
+- `src/composables` – composition utilities exposing the scheduling API and worker bridge.
+- `src/utils` – calendar engine, CPM scheduler, UUID helper, and future support functions.
+- `src/worker` – web worker entry points for offloading CPM calculations.
+- `tests` – Vitest unit tests and fixtures.
+
+Refer to the [technical specification](docs/technical-spec.md) for an in-depth breakdown of features, non-functional requirements, and roadmap milestones.
