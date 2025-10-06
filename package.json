@@ -13,6 +13,9 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite",
+    "dev:example:basic": "vite --config examples/basic/vite.config.ts",
+    "dev:example:resources": "vite --config examples/resource-allocation/vite.config.ts",
+    "dev:example:progress": "vite --config examples/progress-tracking/vite.config.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint \"src/**/*.{ts,tsx,vue}\"",

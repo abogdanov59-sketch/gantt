@@ -4,15 +4,17 @@ This repository contains an installable Vue 3 library that implements the constr
 
 ## Getting Started
 
+Install dependencies and build the library using your preferred package manager:
+
 ```bash
-pnpm install
-pnpm run build
+npm install
+npm run build
 ```
 
 To run the automated tests:
 
 ```bash
-pnpm test
+npm test
 ```
 
 ## Usage Example
@@ -52,14 +54,21 @@ app.mount('#app')
 
 Additional runnable examples covering basic usage, resource allocation, and progress tracking
 are available under [`examples/`](examples/README.md). Each example has its own Vite config so
-you can launch them individually from the project root.
+you can launch them individually from the project root:
+
+```bash
+npm run dev:example:basic      # http://localhost:5174
+npm run dev:example:resources  # http://localhost:5175
+npm run dev:example:progress   # http://localhost:5176
+```
 
 ## Scripts
 
-- `pnpm dev` – run the example playground (coming soon).
-- `pnpm build` – build the distributable library bundle with Vite.
-- `pnpm test` – run Vitest unit tests for the scheduling engine.
-- `pnpm type-check` – validate the TypeScript definitions.
+- `npm run dev` – run the library playground (coming soon).
+- `npm run build` – build the distributable library bundle with Vite.
+- `npm test` – run Vitest unit tests for the scheduling engine.
+- `npm run type-check` – validate the TypeScript definitions.
+- `npm run dev:example:*` – launch the example applications listed above.
 
 ## Project Structure
 
