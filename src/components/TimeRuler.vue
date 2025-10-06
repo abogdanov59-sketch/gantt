@@ -20,7 +20,7 @@ const props = defineProps({
     required: true
   },
   zoom: {
-    type: Object as PropType<{ value: number } | number | string>,
+    type: [Number, String, Object] as PropType<number | string | { value: number }>,
     required: true
   }
 })

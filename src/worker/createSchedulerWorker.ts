@@ -13,7 +13,11 @@ const cloneForWorker = <T>(value: T): T => {
   ).structuredClone
 
   if (typeof structuredCloneFn === 'function') {
-    return structuredCloneFn(value)
+    try {
+      return structuredCloneFn(value)
+    } catch {
+      // fall through to JSON cloning below when structuredClone cannot handle the payload
+    }
   }
 
   return JSON.parse(JSON.stringify(value)) as T
