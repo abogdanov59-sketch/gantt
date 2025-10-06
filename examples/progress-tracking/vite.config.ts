@@ -1,23 +1,23 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { resolve } from 'node:path'
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const rootDir = fileURLToPath(new URL('.', import.meta.url))
 
 export default defineConfig({
   plugins: [vue()],
-  root: __dirname,
-  server: {
-    port: 5176
-  },
+  root: rootDir,
   resolve: {
     alias: {
-      '@gantt/module': path.resolve(__dirname, '../../src')
+      '@gantt/module': resolve(rootDir, '../../src')
     }
   },
   build: {
     outDir: 'dist',
-    emptyOutDir: true
+    emptyOutDir: true,
+    rollupOptions: {
+      input: resolve(rootDir, 'index.html')
+    }
   }
 })
