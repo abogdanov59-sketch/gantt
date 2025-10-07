@@ -1,0 +1,26 @@
+@import 'primeicons/primeicons.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --gantt-row-height: 40px;
+  --gantt-critical-color: theme('colors.critical');
+  --gantt-critical-border: theme('colors.critical');
+  --gantt-baseline-color: theme('colors.baseline');
+}
+
+.gantt-theme-dark {
+  --gantt-background: #1f2937;
+  --gantt-text: #f3f4f6;
+}
+
+.gantt-theme-light {
+  --gantt-background: #ffffff;
+  --gantt-text: #111827;
+}
+
+.gantt-container {
+  @apply bg-white dark:bg-gray-900 text-slate-900 dark:text-slate-100;
+}

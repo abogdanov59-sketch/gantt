@@ -1,0 +1,58 @@
+{
+  "name": "@gantt/construction-scheduler",
+  "version": "0.1.0",
+  "description": "Isolated Vue 3 Gantt chart module for construction scheduling",
+  "type": "module",
+  "main": "dist/gantt.umd.cjs",
+  "module": "dist/gantt.es.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite",
+    "dev:example:basic": "vite --config examples/basic/vite.config.ts",
+    "dev:example:resources": "vite --config examples/resource-allocation/vite.config.ts",
+    "dev:example:progress": "vite --config examples/progress-tracking/vite.config.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint .",
+    "type-check": "vue-tsc --noEmit"
+  },
+  "peerDependencies": {
+    "vue": "^3.4.0",
+    "primevue": "^4.4.0",
+    "tailwindcss": "^3.4.0",
+    "primeicons": "^7.0.0"
+  },
+  "dependencies": {
+    "@vueuse/core": "^11.0.0",
+    "date-fns": "^3.6.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.11.0",
+    "@primevue/themes": "^4.4.0",
+    "@types/node": "^22.5.4",
+    "@typescript-eslint/eslint-plugin": "^8.3.0",
+    "@typescript-eslint/parser": "^8.3.0",
+    "@vitejs/plugin-vue": "^5.1.4",
+    "@vitest/coverage-v8": "^2.1.1",
+    "@vue/test-utils": "^2.4.6",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^9.11.0",
+    "eslint-plugin-vue": "^9.27.0",
+    "jsdom": "^24.1.0",
+    "postcss": "^8.4.49",
+    "primeicons": "^7.0.0",
+    "primevue": "^4.4.0",
+    "tailwindcss": "^3.4.13",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.10",
+    "vitest": "^2.1.1",
+    "vue": "^3.5.5",
+    "vue-eslint-parser": "^9.4.3",
+    "vue-tsc": "^2.0.28"
+  }
+}
