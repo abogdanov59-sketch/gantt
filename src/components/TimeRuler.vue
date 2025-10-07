@@ -1,20 +1,12 @@
 <template>
-  <div class="overflow-hidden border-b border-slate-200 bg-white text-xs font-medium uppercase tracking-wide text-slate-500 dark:border-slate-700 dark:bg-slate-800">
+  <div class="flex h-9 items-center" :style="{ width: `${Math.max(contentWidth, 0)}px` }">
     <div
-      class="flex h-9 items-center"
-      :style="{
-        width: `${Math.max(contentWidth, 0)}px`,
-        transform: `translateX(-${scrollLeft}px)`
-      }"
+      v-for="tick in ticks"
+      :key="tick.id"
+      class="flex h-full flex-none items-center border-r border-slate-200 px-2 dark:border-slate-700"
+      :style="{ width: `${tick.width}px` }"
     >
-      <div
-        v-for="tick in ticks"
-        :key="tick.id"
-        class="flex h-full flex-none items-center border-r border-slate-200 px-2 dark:border-slate-700"
-        :style="{ width: `${tick.width}px` }"
-      >
-        <span class="whitespace-nowrap">{{ tick.label }}</span>
-      </div>
+      <span class="whitespace-nowrap">{{ tick.label }}</span>
     </div>
   </div>
 </template>
@@ -41,14 +33,10 @@ const props = defineProps({
   contentWidth: {
     type: Number,
     required: true
-  },
-  scrollLeft: {
-    type: Number,
-    required: true
   }
 })
 
-const { contentWidth, scrollLeft } = toRefs(props)
+const { contentWidth } = toRefs(props)
 
 type TickStep = {
   ms: number

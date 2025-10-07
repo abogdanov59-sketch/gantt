@@ -1,19 +1,24 @@
 <template>
   <div class="flex h-full flex-col">
-    <TimeRuler
-      :start-date="timelineStart"
-      :end-date="timelineEnd"
-      :pixels-per-ms="pixelsPerMs"
-      :content-width="contentWidth"
-      :scroll-left="scrollLeft"
-    />
+    <div
+      ref="headerContainer"
+      class="overflow-x-auto overflow-y-hidden border-b border-slate-200 bg-white text-xs font-medium uppercase tracking-wide text-slate-500 dark:border-slate-700 dark:bg-slate-800"
+      @scroll="handleHeaderScroll"
+    >
+      <TimeRuler
+        :start-date="timelineStart"
+        :end-date="timelineEnd"
+        :pixels-per-ms="pixelsPerMs"
+        :content-width="contentWidth"
+      />
+    </div>
     <div
       ref="canvasContainer"
       class="relative flex-1 overflow-auto bg-slate-50 dark:bg-slate-900"
-      @scroll="handleScroll"
+      @scroll="handleBodyScroll"
     >
       <div class="relative" :style="canvasWrapperStyle">
-        <canvas ref="canvas" class="block h-full w-full"></canvas>
+        <canvas ref="canvas" class="block h-full w-full" @click="handleCanvasClick"></canvas>
         <DependencyLayer
           v-if="canvasContext"
           :tasks="tasks"
@@ -42,6 +47,8 @@ import type {
 import DependencyLayer from './DependencyLayer.vue'
 import TimeRuler from './TimeRuler.vue'
 
+const emit = defineEmits(['select-task'])
+
 const props = defineProps({
   tasks: {
     type: Array as PropType<Task[]>,
@@ -62,17 +69,32 @@ const props = defineProps({
   stats: {
     type: Object as PropType<SchedulerStats | null>,
     default: null
+  },
+  showBaselines: {
+    type: Boolean,
+    default: false
+  },
+  highlightCritical: {
+    type: Boolean,
+    default: false
+  },
+  selectedTaskId: {
+    type: String,
+    default: null
   }
 })
 
 const canvas = ref<HTMLCanvasElement | null>(null)
 const canvasContainer = ref<HTMLDivElement | null>(null)
+const headerContainer = ref<HTMLDivElement | null>(null)
 const canvasContext = ref<CanvasRenderingContext2D | null>(null)
 const scrollLeft = ref(0)
 const rowHeight = 44
 const basePixelsPerHour = 48
 const zoomLevel = ref(1)
 let resizeObserver: ResizeObserver | null = null
+let syncingFromHeader = false
+let syncingFromBody = false
 
 const startDates = computed(() => props.tasks.map((task) => new Date(task.start).getTime()))
 const finishDates = computed(() => props.tasks.map((task) => new Date(task.finish).getTime()))
@@ -81,6 +103,7 @@ const timelineStart = computed(() => {
   if (!startDates.value.length) return new Date()
   return new Date(Math.min(...startDates.value))
 })
+
 const timelineEnd = computed(() => {
   if (!finishDates.value.length) return new Date()
   return new Date(Math.max(...finishDates.value))
@@ -107,6 +130,9 @@ const canvasWrapperStyle = computed(() => ({
   height: `${contentHeight.value}px`
 }))
 
+const getPrimaryBaseline = (task: Task) =>
+  task.baseline?.find((snapshot) => snapshot.index === 0) ?? task.baseline?.[0]
+
 const draw = () => {
   const context = canvasContext.value
   const canvasElement = canvas.value
@@ -130,18 +156,78 @@ const draw = () => {
     const finish = new Date(task.finish).getTime()
     const x = (start - timelineStart.value.getTime()) * pixelsPerMs.value
     const barWidth = Math.max((finish - start) * pixelsPerMs.value, 3)
-    context.fillStyle = task.flags?.critical
+    const barHeight = rowHeight - 24
+
+    if (props.showBaselines) {
+      const baseline = getPrimaryBaseline(task)
+      if (baseline?.start && baseline?.finish) {
+        const baselineStart = new Date(baseline.start).getTime()
+        const baselineFinish = new Date(baseline.finish).getTime()
+        const baselineX = (baselineStart - timelineStart.value.getTime()) * pixelsPerMs.value
+        const baselineWidth = Math.max((baselineFinish - baselineStart) * pixelsPerMs.value, 2)
+        const baselineY = y + barHeight + 6
+        context.fillStyle = 'var(--gantt-baseline-color, #f97316)'
+        context.fillRect(baselineX, baselineY, baselineWidth, 4)
+      }
+    }
+
+    const isCritical = props.highlightCritical && task.flags?.critical
+    const isSelected = props.selectedTaskId === task.id
+
+    context.fillStyle = isCritical
       ? 'var(--gantt-critical-color, #ef4444)'
       : 'var(--gantt-bar-color, #2563eb)'
-    context.fillRect(x, y, barWidth, rowHeight - 24)
+    context.fillRect(x, y, barWidth, barHeight)
+
+    if (isSelected) {
+      context.strokeStyle = 'var(--gantt-selected-color, #facc15)'
+      context.lineWidth = 2
+      context.strokeRect(x - 1, y - 1, barWidth + 2, barHeight + 2)
+    }
+
     context.fillStyle = '#fff'
     context.font = '12px sans-serif'
     context.fillText(task.name, x + 4, y + 12)
   })
 }
 
-const handleScroll = () => {
-  scrollLeft.value = canvasContainer.value?.scrollLeft ?? 0
+const handleBodyScroll = () => {
+  if (!canvasContainer.value) return
+  if (syncingFromHeader) {
+    syncingFromHeader = false
+    return
+  }
+  const left = canvasContainer.value.scrollLeft
+  scrollLeft.value = left
+  if (headerContainer.value) {
+    syncingFromBody = true
+    headerContainer.value.scrollLeft = left
+  }
+}
+
+const handleHeaderScroll = () => {
+  if (!headerContainer.value) return
+  if (syncingFromBody) {
+    syncingFromBody = false
+    return
+  }
+  const left = headerContainer.value.scrollLeft
+  scrollLeft.value = left
+  if (canvasContainer.value) {
+    syncingFromHeader = true
+    canvasContainer.value.scrollLeft = left
+  }
+}
+
+const handleCanvasClick = (event: MouseEvent) => {
+  if (!canvas.value) return
+  const rect = canvas.value.getBoundingClientRect()
+  const x = event.clientX - rect.left + scrollLeft.value
+  const y = event.clientY - rect.top + (canvasContainer.value?.scrollTop ?? 0)
+  const rowIndex = Math.floor(y / rowHeight)
+  const task = props.tasks[rowIndex]
+  if (!task) return
+  emit('select-task', task.id)
 }
 
 const zoomPresets: Record<string, number> = {
@@ -161,7 +247,7 @@ const applyZoom = (zoomValue: ResolvedGanttOptions['zoom']) => {
 
   if (zoomValue === 'fit') {
     const containerWidth = canvasContainer.value?.clientWidth ?? 1
-    const naturalWidth = durationMs.value * ((basePixelsPerHour) / (60 * 60 * 1000))
+    const naturalWidth = durationMs.value * (basePixelsPerHour / (60 * 60 * 1000))
     zoomLevel.value = naturalWidth > 0 ? containerWidth / Math.max(naturalWidth, 1) : 1
     return
   }
@@ -185,7 +271,7 @@ const applyZoom = (zoomValue: ResolvedGanttOptions['zoom']) => {
 onMounted(() => {
   if (!canvas.value) return
   canvasContext.value = canvas.value.getContext('2d')
-  handleScroll()
+  handleBodyScroll()
   resizeObserver = typeof ResizeObserver !== 'undefined'
     ? new ResizeObserver(() => {
         if (props.options.zoom === 'fit') {
@@ -204,7 +290,16 @@ onMounted(() => {
 })
 
 watch(
-  () => [props.tasks, pixelsPerMs.value, timelineStart.value.getTime(), contentHeight.value, contentWidth.value],
+  () => [
+    props.tasks,
+    pixelsPerMs.value,
+    timelineStart.value.getTime(),
+    contentHeight.value,
+    contentWidth.value,
+    props.showBaselines,
+    props.highlightCritical,
+    props.selectedTaskId
+  ],
   () => {
     draw()
   },
@@ -226,15 +321,12 @@ watch(
   { immediate: true }
 )
 
-watch(
-  durationMs,
-  () => {
-    if (props.options.zoom === 'fit') {
-      applyZoom('fit')
-    }
-    draw()
+watch(durationMs, () => {
+  if (props.options.zoom === 'fit') {
+    applyZoom('fit')
   }
-)
+  draw()
+})
 
 onBeforeUnmount(() => {
   if (resizeObserver) {

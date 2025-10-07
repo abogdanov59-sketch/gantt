@@ -4,14 +4,17 @@
       <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500">Work Breakdown Structure</h2>
       <span v-if="loading" class="text-xs text-slate-400">Recalculating...</span>
     </header>
-    <div class="flex-1 min-h-0">
+    <div class="flex min-h-0 flex-1 flex-col overflow-hidden">
       <DataTable
         :value="tasks"
         data-key="id"
         scrollable
+        scroll-direction="both"
         scroll-height="flex"
         table-style="min-width: 100%"
-        class="h-full"
+        class="flex-1"
+        :row-class="rowClass"
+        @row-click="handleRowClick"
       >
         <Column
           field="name"
@@ -21,7 +24,7 @@
           <template #body="slotProps">
             <div class="flex items-center gap-2">
               <span class="font-medium">{{ slotProps.data.name }}</span>
-              <span v-if="slotProps.data.flags?.critical" class="text-xs text-critical">Critical</span>
+              <span v-if="slotProps.data.flags?.critical" class="text-xs font-semibold uppercase tracking-wide text-rose-500">Critical</span>
             </div>
           </template>
         </Column>
@@ -70,7 +73,7 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import type { ColumnDef, SchedulerMessage, Task } from '@/types'
 
-defineProps({
+const props = defineProps({
   tasks: {
     type: Array as PropType<Task[]>,
     required: true
@@ -86,10 +89,18 @@ defineProps({
   messages: {
     type: Array as PropType<SchedulerMessage[]>,
     default: () => []
+  },
+  highlightCritical: {
+    type: Boolean,
+    default: false
+  },
+  selectedTaskId: {
+    type: String,
+    default: null
   }
 })
 
-defineEmits(['update:task'])
+const emit = defineEmits(['update:task', 'edit-task'])
 
 const DATE_FORMAT = 'dd.MM.yyyy HH:mm:ss'
 
@@ -103,5 +114,21 @@ const formatDateTime = (value?: string | Date) => {
 const getColumnValue = (task: Task, column: ColumnDef) => {
   if (column.formatter) return column.formatter(task)
   return (task as Record<string, unknown>)[column.key] as string
+}
+
+const rowClass = (task: Task) => {
+  const classes: string[] = []
+  if (task.id === props.selectedTaskId) {
+    classes.push('bg-blue-50', 'dark:bg-slate-700/60')
+  }
+  if (props.highlightCritical && task.flags?.critical) {
+    classes.push('border-l-4', 'border-rose-400')
+  }
+  return classes.join(' ')
+}
+
+const handleRowClick = (event: { data: Task }) => {
+  if (!event?.data) return
+  emit('edit-task', event.data.id)
 }
 </script>
