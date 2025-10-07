@@ -11,57 +11,63 @@
         scrollable
         scroll-direction="both"
         scroll-height="flex"
-        table-style="min-width: 100%"
+        table-style="width: 100%; table-layout: fixed;"
         class="flex-1 min-h-0"
+        :pt="dataTablePt"
         :row-class="rowClass"
         @row-click="handleRowClick"
       >
         <Column
           field="name"
           header="Task"
-          :style="{ width: '200px' }"
+          :style="{ width: '260px', maxWidth: '260px' }"
+          :pt="nameColumnPt"
         >
           <template #body="slotProps">
             <div
-              class="flex items-center gap-2"
+              class="flex min-w-0 items-center gap-2"
               :style="{ paddingLeft: `${slotProps.data.level * 1.25}rem` }"
             >
               <button
                 v-if="slotProps.data.isSummary"
                 type="button"
-                class="flex h-6 w-6 items-center justify-center rounded text-slate-500 hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-300 dark:hover:bg-slate-700"
+                class="flex h-6 w-6 flex-none items-center justify-center rounded text-slate-500 hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-300 dark:hover:bg-slate-700"
+                :aria-expanded="slotProps.data.isExpanded"
+                :aria-label="slotProps.data.isExpanded ? 'Collapse task' : 'Expand task'"
                 @click.stop="toggleTask(slotProps.data)"
               >
                 <i
                   :class="slotProps.data.isExpanded ? 'pi pi-chevron-down text-xs' : 'pi pi-chevron-right text-xs'"
                 ></i>
               </button>
-              <span v-else class="inline-block h-6 w-6"></span>
+              <span v-else class="inline-block h-6 w-6 flex-none"></span>
               <span
                 :class="[
-                  'truncate',
+                  'truncate text-slate-700 dark:text-slate-100',
                   slotProps.data.isSummary ? 'font-semibold text-slate-700 dark:text-slate-100' : 'font-medium'
                 ]"
+                class="block min-w-0 flex-1 truncate"
+                :title="slotProps.data.name"
               >
                 {{ slotProps.data.name }}
               </span>
               <span
                 v-if="highlightCritical && slotProps.data.flags?.critical"
-                class="text-xs font-semibold uppercase tracking-wide text-rose-500"
+                class="text-[10px] font-semibold uppercase tracking-wide text-rose-500"
               >
                 Critical
               </span>
             </div>
           </template>
         </Column>
-        <Column field="start" header="Start" :style="{ width: '200px' }">
+        <Column field="start" header="Start" :style="{ width: '200px' }" :pt="dateColumnPt">
           <template #body="slotProps">
             <span class="block truncate" :title="formatDateTime(slotProps.data.start)">
               {{ formatDateTime(slotProps.data.start) }}
             </span>
           </template>
         </Column>
-        <Column field="finish" header="Finish" :style="{ width: '200px' }">
+        <Column field="finish" header="Finish" :style="{ width: '200px' }" :pt="dateColumnPt">
           <template #body="slotProps">
             <span class="block truncate" :title="formatDateTime(slotProps.data.finish)">
               {{ formatDateTime(slotProps.data.finish) }}
@@ -129,6 +135,24 @@ const props = defineProps({
 const emit = defineEmits(['update:task', 'edit-task', 'toggle-task'])
 
 const DATE_FORMAT = 'dd.MM.yyyy HH:mm:ss'
+
+const dataTablePt = {
+  root: { class: 'h-full flex flex-col' },
+  wrapper: { class: 'flex-1 overflow-auto' },
+  table: { class: 'min-w-full table-fixed' },
+  header: { class: 'bg-slate-100 dark:bg-slate-800 sticky top-0 z-10' },
+  bodyRow: { class: 'h-11' }
+} as const
+
+const nameColumnPt = {
+  headerCell: { class: 'min-w-[260px] max-w-[260px]' },
+  bodyCell: { class: 'min-w-[260px] max-w-[260px]' }
+} as const
+
+const dateColumnPt = {
+  headerCell: { class: 'min-w-[200px] max-w-[200px]' },
+  bodyCell: { class: 'min-w-[200px] max-w-[200px]' }
+} as const
 
 const formatDateTime = (value?: string | Date) => {
   if (!value) return ''

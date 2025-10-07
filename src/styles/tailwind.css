@@ -1,3 +1,5 @@
+@import 'primeicons/primeicons.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -5,6 +7,7 @@
 :root {
   --gantt-row-height: 40px;
   --gantt-critical-color: theme('colors.critical');
+  --gantt-critical-border: theme('colors.critical');
   --gantt-baseline-color: theme('colors.baseline');
 }
 

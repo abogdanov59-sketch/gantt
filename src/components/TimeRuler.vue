@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col" :style="{ width: `${Math.max(contentWidth, 0)}px` }">
+  <div class="flex flex-col" :style="{ width: `${rulerWidth}px` }">
     <div class="flex h-8 border-b border-slate-200 dark:border-slate-700">
       <div
         v-for="week in weeks"
@@ -26,11 +26,11 @@
 
 <script setup lang="ts">
 import { computed, toRefs } from 'vue'
-import { format } from 'date-fns'
+import { format, startOfWeek } from 'date-fns'
 
 const DAY = 24 * 60 * 60 * 1000
-const WEEK = DAY * 7
-const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'] as const
+const DAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'] as const
+const WEEK_OPTIONS = { weekStartsOn: 1 as const }
 
 const props = defineProps({
   startDate: {
@@ -48,58 +48,102 @@ const props = defineProps({
   contentWidth: {
     type: Number,
     required: true
+  },
+  minDayWidth: {
+    type: Number,
+    default: 36
   }
 })
 
 const { contentWidth } = toRefs(props)
 
-const days = computed(() => {
-  const items: Array<{ id: string; label: string; width: number; isWeekend: boolean }> = []
+interface DayCell {
+  id: string
+  label: string
+  width: number
+  isWeekend: boolean
+  start: number
+}
+
+interface WeekCell {
+  id: string
+  label: string
+  width: number
+}
+
+const days = computed<DayCell[]>(() => {
+  const items: DayCell[] = []
   let cursor = props.startDate.getTime()
   const end = props.endDate.getTime()
   while (cursor < end) {
     const next = Math.min(cursor + DAY, end)
     const date = new Date(cursor)
     const dayIndex = date.getDay()
+    const labelIndex = (dayIndex + 6) % 7
     items.push({
       id: `day-${cursor}`,
-      label: DAY_LABELS[dayIndex],
-      width: Math.max((next - cursor) * props.pixelsPerMs, 1),
-      isWeekend: dayIndex === 0 || dayIndex === 6
+      label: DAY_LABELS[labelIndex],
+      width: (next - cursor) * props.pixelsPerMs,
+      isWeekend: dayIndex === 0 || dayIndex === 6,
+      start: cursor
     })
     cursor = next
   }
   if (!items.length) {
     items.push({
       id: `day-${props.startDate.getTime()}`,
-      label: DAY_LABELS[props.startDate.getDay()],
-      width: Math.max((props.endDate.getTime() - props.startDate.getTime()) * props.pixelsPerMs, 1),
-      isWeekend: false
+      label: DAY_LABELS[(props.startDate.getDay() + 6) % 7],
+      width: Math.max((props.endDate.getTime() - props.startDate.getTime()) * props.pixelsPerMs, props.minDayWidth),
+      isWeekend: false,
+      start: props.startDate.getTime()
     })
   }
   return items
 })
 
-const weeks = computed(() => {
-  const items: Array<{ id: string; label: string; width: number }> = []
-  let cursor = props.startDate.getTime()
-  const end = props.endDate.getTime()
-  while (cursor < end) {
-    const next = Math.min(cursor + WEEK, end)
+const weeks = computed<WeekCell[]>(() => {
+  const items: WeekCell[] = []
+  let currentWeekStart: number | null = null
+  let width = 0
+
+  days.value.forEach((day) => {
+    const weekStart = startOfWeek(new Date(day.start), WEEK_OPTIONS).getTime()
+    if (currentWeekStart == null || weekStart !== currentWeekStart) {
+      if (currentWeekStart != null) {
+        items.push({
+          id: `week-${currentWeekStart}`,
+          label: format(new Date(currentWeekStart), 'dd MMM yyyy'),
+          width
+        })
+      }
+      currentWeekStart = weekStart
+      width = 0
+    }
+    width += day.width
+  })
+
+  if (currentWeekStart != null) {
     items.push({
-      id: `week-${cursor}`,
-      label: format(new Date(cursor), 'dd MMM yyyy'),
-      width: Math.max((next - cursor) * props.pixelsPerMs, 1)
+      id: `week-${currentWeekStart}`,
+      label: format(new Date(currentWeekStart), 'dd MMM yyyy'),
+      width
     })
-    cursor = next
   }
+
   if (!items.length) {
+    const start = startOfWeek(props.startDate, WEEK_OPTIONS)
     items.push({
-      id: `week-${props.startDate.getTime()}`,
-      label: format(props.startDate, 'dd MMM yyyy'),
-      width: Math.max((props.endDate.getTime() - props.startDate.getTime()) * props.pixelsPerMs, 1)
+      id: `week-${start.getTime()}`,
+      label: format(start, 'dd MMM yyyy'),
+      width: Math.max(props.minDayWidth, contentWidth.value)
     })
   }
+
   return items
+})
+
+const rulerWidth = computed(() => {
+  const dayWidth = days.value.reduce((sum, day) => sum + day.width, 0)
+  return Math.max(contentWidth.value, dayWidth)
 })
 </script>

@@ -10,6 +10,7 @@
         :end-date="timelineEnd"
         :pixels-per-ms="pixelsPerMs"
         :content-width="contentWidth"
+        :min-day-width="MIN_DAY_WIDTH"
       />
     </div>
     <div
@@ -43,7 +44,7 @@ import type {
   Dependency,
   Project,
   ResolvedGanttOptions,
-  SchedulerStats,
+  SchedulerStats
 } from '@/types'
 import DependencyLayer from './DependencyLayer.vue'
 import TimeRuler from './TimeRuler.vue'
@@ -91,7 +92,10 @@ const headerContainer = ref<HTMLDivElement | null>(null)
 const canvasContext = ref<CanvasRenderingContext2D | null>(null)
 const scrollLeft = ref(0)
 const rowHeight = 44
-const basePixelsPerHour = 48
+const basePixelsPerHour = 1.5
+const DAY_MS = 24 * 60 * 60 * 1000
+const MIN_DAY_WIDTH = 36
+const MIN_PIXELS_PER_MS = MIN_DAY_WIDTH / DAY_MS
 const zoomLevel = ref(1)
 let resizeObserver: ResizeObserver | null = null
 let syncingFromHeader = false
@@ -119,7 +123,10 @@ const timelineEnd = computed(() => timelineBounds.value.end)
 
 const durationMs = computed(() => Math.max(1, timelineEnd.value.getTime() - timelineStart.value.getTime()))
 
-const pixelsPerMs = computed(() => (basePixelsPerHour * zoomLevel.value) / (60 * 60 * 1000))
+const pixelsPerMs = computed(() => {
+  const base = (basePixelsPerHour * zoomLevel.value) / (60 * 60 * 1000)
+  return Math.max(base, MIN_PIXELS_PER_MS)
+})
 
 const contentWidth = computed(() => {
   const width = durationMs.value * pixelsPerMs.value
@@ -138,7 +145,7 @@ const canvasWrapperStyle = computed(() => ({
   height: `${contentHeight.value}px`
 }))
 
-const getPrimaryBaseline = (task: Task) =>
+const getPrimaryBaseline = (task: DisplayTask) =>
   task.baseline?.find((snapshot) => snapshot.index === 0) ?? task.baseline?.[0]
 
 const draw = () => {
@@ -207,9 +214,15 @@ const draw = () => {
       context.fillStyle = 'var(--gantt-summary-text, #0f172a)'
     } else {
       context.fillStyle = isCritical
-        ? 'var(--gantt-critical-color, #ef4444)'
+        ? 'var(--gantt-critical-color, #dc2626)'
         : 'var(--gantt-bar-color, #2563eb)'
       context.fillRect(x, y, barWidth, barHeight)
+
+      if (isCritical) {
+        context.strokeStyle = 'var(--gantt-critical-border, #7f1d1d)'
+        context.lineWidth = 2
+        context.strokeRect(x - 1.5, y - 1.5, barWidth + 3, barHeight + 3)
+      }
 
       if (isSelected) {
         context.strokeStyle = 'var(--gantt-selected-color, #facc15)'
