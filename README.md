@@ -4,7 +4,9 @@ This repository contains an installable Vue 3 library that implements the constr
 
 ## Getting Started
 
-Install dependencies and build the library using your preferred package manager:
+Install dependencies and build the library using your preferred package manager. The module expects the
+following peer packages in the host application: `vue@^3.4`, `primevue@^4.4`, `tailwindcss@^3.4`, and
+`primeicons@^7`.
 
 ```bash
 npm install
