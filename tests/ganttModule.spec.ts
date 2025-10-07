@@ -8,7 +8,7 @@ vi.mock('@/components/GanttGrid.vue', () => ({
   default: defineComponent({
     name: 'GanttGridStub',
     props: ['tasks', 'loading', 'columns', 'messages', 'highlightCritical', 'selectedTaskId'],
-    emits: ['update:task', 'edit-task'],
+    emits: ['update:task', 'edit-task', 'toggle-task'],
     setup(props, { emit }) {
       return () =>
         h(
@@ -183,7 +183,15 @@ const model: GanttModelValue = {
   ],
   tasks: [
     {
+      id: 'sum',
+      name: 'Summary',
+      type: 'task',
+      start: '2025-01-01T08:00:00Z',
+      finish: '2025-01-02T17:00:00Z'
+    },
+    {
       id: 't1',
+      parentId: 'sum',
       name: 'Task 1',
       type: 'task',
       start: '2025-01-01T08:00:00Z',
@@ -197,6 +205,12 @@ const calculation: CalculationResult = {
   tasks: [
     {
       ...model.tasks[0],
+      duration: 540
+    },
+    {
+      ...model.tasks[0],
+      id: 't1',
+      parentId: 'sum',
       duration: 480,
       flags: { critical: true }
     }
@@ -285,5 +299,21 @@ describe('GanttModule', () => {
 
     const taskUpdated = wrapper.emitted('taskUpdated')?.find((event) => event?.[0]?.taskId === 't1')
     expect(taskUpdated?.[0]?.patch.name).toBe('Task 1 updated')
+  })
+
+  it('collapses child rows when toggle-task is emitted', async () => {
+    const wrapper = factory()
+    await flushPromises()
+
+    const timelineBefore = wrapper.findComponent({ name: 'GanttTimelineStub' }).props('tasks') as any[]
+    expect(timelineBefore.length).toBe(2)
+
+    const grid = wrapper.findComponent({ name: 'GanttGridStub' })
+    grid.vm.$emit('toggle-task', 'sum')
+    await flushPromises()
+
+    const timelineAfter = wrapper.findComponent({ name: 'GanttTimelineStub' }).props('tasks') as any[]
+    expect(timelineAfter.length).toBe(1)
+    expect(timelineAfter[0].id).toBe('sum')
   })
 })

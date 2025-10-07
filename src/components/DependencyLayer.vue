@@ -26,11 +26,11 @@
 
 <script setup lang="ts">
 import { computed, type PropType } from 'vue'
-import type { Dependency, Project, Task } from '@/types'
+import type { Dependency, DisplayTask, Project } from '@/types'
 
 const props = defineProps({
   tasks: {
-    type: Array as PropType<Task[]>,
+    type: Array as PropType<DisplayTask[]>,
     required: true
   },
   dependencies: {

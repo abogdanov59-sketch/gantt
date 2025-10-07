@@ -31,7 +31,25 @@ export const progressModel: GanttModelValue = {
   ],
   tasks: [
     {
+      id: 'sum-interior',
+      name: 'Interior Fit-out',
+      type: 'task',
+      start: '2025-03-24T07:00:00Z',
+      finish: '2025-04-28T12:00:00Z',
+      duration: 0
+    },
+    {
+      id: 'sum-mep',
+      parentId: 'sum-interior',
+      name: 'MEP Systems',
+      type: 'task',
+      start: '2025-03-24T07:00:00Z',
+      finish: '2025-04-05T17:00:00Z',
+      duration: 0
+    },
+    {
       id: 't-roughin',
+      parentId: 'sum-mep',
       name: 'MEP rough-in',
       type: 'task',
       start: '2025-03-24T07:00:00Z',
@@ -44,7 +62,17 @@ export const progressModel: GanttModelValue = {
       ]
     },
     {
+      id: 'sum-finishes',
+      parentId: 'sum-interior',
+      name: 'Finishes',
+      type: 'task',
+      start: '2025-04-06T07:00:00Z',
+      finish: '2025-04-28T12:00:00Z',
+      duration: 0
+    },
+    {
       id: 't-drywall',
+      parentId: 'sum-finishes',
       name: 'Drywall and taping',
       type: 'task',
       start: '2025-04-06T07:00:00Z',
@@ -57,6 +85,7 @@ export const progressModel: GanttModelValue = {
     },
     {
       id: 't-flooring',
+      parentId: 'sum-finishes',
       name: 'Flooring install',
       type: 'task',
       start: '2025-04-19T07:00:00Z',
@@ -69,6 +98,7 @@ export const progressModel: GanttModelValue = {
     },
     {
       id: 'm-turnover',
+      parentId: 'sum-finishes',
       name: 'Turnover',
       type: 'milestone',
       start: '2025-04-28T12:00:00Z',

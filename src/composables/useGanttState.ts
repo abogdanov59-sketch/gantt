@@ -7,6 +7,7 @@ import type {
   Task
 } from '@/types'
 import { useSchedulerWorker } from './useSchedulerWorker'
+import { flattenTasks } from '@/utils/taskHierarchy'
 
 interface UseGanttStateOptions {
   modelValue: Ref<GanttModelValue>
@@ -14,8 +15,13 @@ interface UseGanttStateOptions {
 }
 
 export const useGanttState = ({ modelValue, options }: UseGanttStateOptions) => {
+  const normalizedModel = computed<GanttModelValue>(() => ({
+    ...modelValue.value,
+    tasks: flattenTasks(modelValue.value.tasks)
+  }))
+
   const state = reactive({
-    tasks: computed(() => modelValue.value.tasks),
+    tasks: computed(() => normalizedModel.value.tasks),
     calculation: null as CalculationResult | null,
     stats: null as SchedulerStats | null,
     messages: [] as CalculationResult['messages'],
@@ -31,7 +37,7 @@ export const useGanttState = ({ modelValue, options }: UseGanttStateOptions) => 
 
   const recalculate = async () => {
     state.loading = true
-    const result = await worker.calculate(modelValue.value, schedulerOptions.value)
+    const result = await worker.calculate(normalizedModel.value, schedulerOptions.value)
     state.calculation = result
     state.stats = result.stats
     state.messages = result.messages
@@ -39,7 +45,7 @@ export const useGanttState = ({ modelValue, options }: UseGanttStateOptions) => 
   }
 
   watch(
-    [modelValue, schedulerOptions],
+    [normalizedModel, schedulerOptions],
     () => {
       void recalculate()
     },

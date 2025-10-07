@@ -27,7 +27,25 @@ export const resourceModel: GanttModelValue = {
   ],
   tasks: [
     {
+      id: 'sum-crane',
+      name: 'Tower Crane Deployment',
+      type: 'task',
+      start: '2025-02-10T07:00:00Z',
+      finish: '2025-02-19T18:00:00Z',
+      duration: 0
+    },
+    {
+      id: 'sum-prep',
+      parentId: 'sum-crane',
+      name: 'Engineering & Preparation',
+      type: 'task',
+      start: '2025-02-10T07:00:00Z',
+      finish: '2025-02-12T18:00:00Z',
+      duration: 0
+    },
+    {
       id: 't-engineer',
+      parentId: 'sum-prep',
       name: 'Engineer crane pads',
       type: 'task',
       start: '2025-02-10T07:00:00Z',
@@ -38,7 +56,17 @@ export const resourceModel: GanttModelValue = {
       ]
     },
     {
+      id: 'sum-install',
+      parentId: 'sum-crane',
+      name: 'Installation & Testing',
+      type: 'task',
+      start: '2025-02-13T07:00:00Z',
+      finish: '2025-02-19T18:00:00Z',
+      duration: 0
+    },
+    {
       id: 't-install',
+      parentId: 'sum-install',
       name: 'Install tower crane',
       type: 'task',
       start: '2025-02-13T07:00:00Z',
@@ -50,6 +78,7 @@ export const resourceModel: GanttModelValue = {
     },
     {
       id: 't-test',
+      parentId: 'sum-install',
       name: 'Commissioning and load test',
       type: 'task',
       start: '2025-02-18T07:00:00Z',

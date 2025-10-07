@@ -27,7 +27,25 @@ export const basicModel: GanttModelValue = {
   ],
   tasks: [
     {
+      id: 'sum-overall',
+      name: 'Overall Phase',
+      type: 'task',
+      start: '2025-02-03T08:00:00Z',
+      finish: '2025-02-20T17:00:00Z',
+      duration: 0
+    },
+    {
+      id: 'sum-site',
+      parentId: 'sum-overall',
+      name: 'Site Preparation',
+      type: 'task',
+      start: '2025-02-03T08:00:00Z',
+      finish: '2025-02-12T17:00:00Z',
+      duration: 0
+    },
+    {
       id: 't-mob',
+      parentId: 'sum-site',
       name: 'Mobilization',
       type: 'task',
       start: '2025-02-03T08:00:00Z',
@@ -36,6 +54,7 @@ export const basicModel: GanttModelValue = {
     },
     {
       id: 't-exc',
+      parentId: 'sum-site',
       name: 'Excavation',
       type: 'task',
       start: '2025-02-06T08:00:00Z',
@@ -43,7 +62,17 @@ export const basicModel: GanttModelValue = {
       duration: 2400
     },
     {
+      id: 'sum-structure',
+      parentId: 'sum-overall',
+      name: 'Structure',
+      type: 'task',
+      start: '2025-02-13T08:00:00Z',
+      finish: '2025-02-20T17:00:00Z',
+      duration: 0
+    },
+    {
       id: 't-found',
+      parentId: 'sum-structure',
       name: 'Foundation',
       type: 'task',
       start: '2025-02-13T08:00:00Z',
@@ -52,6 +81,7 @@ export const basicModel: GanttModelValue = {
     },
     {
       id: 'm1',
+      parentId: 'sum-structure',
       name: 'Foundation Complete',
       type: 'milestone',
       start: '2025-02-20T17:00:00Z',

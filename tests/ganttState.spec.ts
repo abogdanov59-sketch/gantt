@@ -33,11 +33,21 @@ const baseModel: GanttModelValue = {
   ],
   tasks: [
     {
-      id: 't1',
-      name: 'Task 1',
+      id: 'sum',
+      name: 'Summary',
       type: 'task',
       start: '2025-01-01T08:00:00Z',
-      finish: '2025-01-01T17:00:00Z'
+      finish: '2025-01-02T17:00:00Z',
+      children: [
+        {
+          id: 't1',
+          parentId: 'sum',
+          name: 'Task 1',
+          type: 'task',
+          start: '2025-01-01T08:00:00Z',
+          finish: '2025-01-01T17:00:00Z'
+        }
+      ]
     }
   ],
   dependencies: []
@@ -46,9 +56,22 @@ const baseModel: GanttModelValue = {
 const stubResult: CalculationResult = {
   tasks: [
     {
-      ...baseModel.tasks[0],
-      flags: { critical: true },
-      duration: 480
+      id: 'sum',
+      name: 'Summary',
+      type: 'task',
+      start: '2025-01-01T08:00:00Z',
+      finish: '2025-01-02T17:00:00Z',
+      duration: 960
+    },
+    {
+      id: 't1',
+      parentId: 'sum',
+      name: 'Task 1',
+      type: 'task',
+      start: '2025-01-01T08:00:00Z',
+      finish: '2025-01-01T17:00:00Z',
+      duration: 480,
+      flags: { critical: true }
     }
   ],
   stats: {
@@ -108,6 +131,7 @@ describe('useGanttState', () => {
         ...modelRef.value.tasks,
         {
           id: 't2',
+          parentId: 'sum',
           name: 'Task 2',
           type: 'task',
           start: '2025-01-02T08:00:00Z',

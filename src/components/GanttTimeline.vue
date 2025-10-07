@@ -37,12 +37,13 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch, type PropType } from 'vue'
+import { endOfWeek, startOfWeek } from 'date-fns'
 import type {
+  DisplayTask,
   Dependency,
   Project,
   ResolvedGanttOptions,
   SchedulerStats,
-  Task
 } from '@/types'
 import DependencyLayer from './DependencyLayer.vue'
 import TimeRuler from './TimeRuler.vue'
@@ -51,7 +52,7 @@ const emit = defineEmits(['select-task'])
 
 const props = defineProps({
   tasks: {
-    type: Array as PropType<Task[]>,
+    type: Array as PropType<DisplayTask[]>,
     required: true
   },
   dependencies: {
@@ -96,18 +97,25 @@ let resizeObserver: ResizeObserver | null = null
 let syncingFromHeader = false
 let syncingFromBody = false
 
-const startDates = computed(() => props.tasks.map((task) => new Date(task.start).getTime()))
-const finishDates = computed(() => props.tasks.map((task) => new Date(task.finish).getTime()))
+const weekOptions = { weekStartsOn: 1 as const }
 
-const timelineStart = computed(() => {
-  if (!startDates.value.length) return new Date()
-  return new Date(Math.min(...startDates.value))
+const timelineBounds = computed(() => {
+  if (!props.tasks.length) {
+    const start = startOfWeek(new Date(), weekOptions)
+    const end = endOfWeek(start, weekOptions)
+    return { start, end }
+  }
+  const startTimes = props.tasks.map((task) => new Date(task.start).getTime())
+  const finishTimes = props.tasks.map((task) => new Date(task.finish).getTime())
+  const minStart = Math.min(...startTimes)
+  const maxFinish = Math.max(...finishTimes)
+  const start = startOfWeek(new Date(minStart), weekOptions)
+  const end = endOfWeek(new Date(maxFinish), weekOptions)
+  return { start, end }
 })
 
-const timelineEnd = computed(() => {
-  if (!finishDates.value.length) return new Date()
-  return new Date(Math.max(...finishDates.value))
-})
+const timelineStart = computed(() => timelineBounds.value.start)
+const timelineEnd = computed(() => timelineBounds.value.end)
 
 const durationMs = computed(() => Math.max(1, timelineEnd.value.getTime() - timelineStart.value.getTime()))
 
@@ -155,7 +163,7 @@ const draw = () => {
     const start = new Date(task.start).getTime()
     const finish = new Date(task.finish).getTime()
     const x = (start - timelineStart.value.getTime()) * pixelsPerMs.value
-    const barWidth = Math.max((finish - start) * pixelsPerMs.value, 3)
+    const barWidth = Math.max((finish - start) * pixelsPerMs.value, task.isSummary ? 6 : 3)
     const barHeight = rowHeight - 24
 
     if (props.showBaselines) {
@@ -171,21 +179,47 @@ const draw = () => {
       }
     }
 
-    const isCritical = props.highlightCritical && task.flags?.critical
+    const isCritical = props.highlightCritical && !task.isSummary && task.flags?.critical
     const isSelected = props.selectedTaskId === task.id
 
-    context.fillStyle = isCritical
-      ? 'var(--gantt-critical-color, #ef4444)'
-      : 'var(--gantt-bar-color, #2563eb)'
-    context.fillRect(x, y, barWidth, barHeight)
+    if (task.isSummary) {
+      const bracketTop = y + 4
+      const bracketBottom = y + barHeight - 4
+      context.strokeStyle = 'var(--gantt-summary-color, #1e293b)'
+      context.lineWidth = 3
+      context.beginPath()
+      context.moveTo(x, bracketTop)
+      context.lineTo(x + barWidth, bracketTop)
+      context.moveTo(x, bracketBottom)
+      context.lineTo(x + barWidth, bracketBottom)
+      context.moveTo(x, bracketTop)
+      context.lineTo(x, bracketBottom)
+      context.moveTo(x + barWidth, bracketTop)
+      context.lineTo(x + barWidth, bracketBottom)
+      context.stroke()
 
-    if (isSelected) {
-      context.strokeStyle = 'var(--gantt-selected-color, #facc15)'
-      context.lineWidth = 2
-      context.strokeRect(x - 1, y - 1, barWidth + 2, barHeight + 2)
+      if (isSelected) {
+        context.strokeStyle = 'var(--gantt-selected-color, #facc15)'
+        context.lineWidth = 2
+        context.strokeRect(x - 2, y + 2, barWidth + 4, barHeight - 4)
+      }
+
+      context.fillStyle = 'var(--gantt-summary-text, #0f172a)'
+    } else {
+      context.fillStyle = isCritical
+        ? 'var(--gantt-critical-color, #ef4444)'
+        : 'var(--gantt-bar-color, #2563eb)'
+      context.fillRect(x, y, barWidth, barHeight)
+
+      if (isSelected) {
+        context.strokeStyle = 'var(--gantt-selected-color, #facc15)'
+        context.lineWidth = 2
+        context.strokeRect(x - 1, y - 1, barWidth + 2, barHeight + 2)
+      }
+
+      context.fillStyle = '#fff'
     }
 
-    context.fillStyle = '#fff'
     context.font = '12px sans-serif'
     context.fillText(task.name, x + 4, y + 12)
   })

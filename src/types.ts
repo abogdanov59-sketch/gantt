@@ -60,6 +60,14 @@ export interface Task {
     nearCritical?: boolean
     late?: boolean
   }
+  children?: Task[]
+}
+
+export interface DisplayTask extends Task {
+  level: number
+  isSummary: boolean
+  isExpanded: boolean
+  visible: boolean
 }
 
 export type DependencyType = 'FS' | 'SS' | 'FF' | 'SF'

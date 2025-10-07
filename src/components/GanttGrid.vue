@@ -12,7 +12,7 @@
         scroll-direction="both"
         scroll-height="flex"
         table-style="min-width: 100%"
-        class="flex-1"
+        class="flex-1 min-h-0"
         :row-class="rowClass"
         @row-click="handleRowClick"
       >
@@ -22,9 +22,35 @@
           :style="{ width: '200px' }"
         >
           <template #body="slotProps">
-            <div class="flex items-center gap-2">
-              <span class="font-medium">{{ slotProps.data.name }}</span>
-              <span v-if="slotProps.data.flags?.critical" class="text-xs font-semibold uppercase tracking-wide text-rose-500">Critical</span>
+            <div
+              class="flex items-center gap-2"
+              :style="{ paddingLeft: `${slotProps.data.level * 1.25}rem` }"
+            >
+              <button
+                v-if="slotProps.data.isSummary"
+                type="button"
+                class="flex h-6 w-6 items-center justify-center rounded text-slate-500 hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-300 dark:hover:bg-slate-700"
+                @click.stop="toggleTask(slotProps.data)"
+              >
+                <i
+                  :class="slotProps.data.isExpanded ? 'pi pi-chevron-down text-xs' : 'pi pi-chevron-right text-xs'"
+                ></i>
+              </button>
+              <span v-else class="inline-block h-6 w-6"></span>
+              <span
+                :class="[
+                  'truncate',
+                  slotProps.data.isSummary ? 'font-semibold text-slate-700 dark:text-slate-100' : 'font-medium'
+                ]"
+              >
+                {{ slotProps.data.name }}
+              </span>
+              <span
+                v-if="highlightCritical && slotProps.data.flags?.critical"
+                class="text-xs font-semibold uppercase tracking-wide text-rose-500"
+              >
+                Critical
+              </span>
             </div>
           </template>
         </Column>
@@ -71,11 +97,11 @@ import { type PropType } from 'vue'
 import { format } from 'date-fns'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
-import type { ColumnDef, SchedulerMessage, Task } from '@/types'
+import type { ColumnDef, DisplayTask, SchedulerMessage } from '@/types'
 
 const props = defineProps({
   tasks: {
-    type: Array as PropType<Task[]>,
+    type: Array as PropType<DisplayTask[]>,
     required: true
   },
   loading: {
@@ -100,7 +126,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['update:task', 'edit-task'])
+const emit = defineEmits(['update:task', 'edit-task', 'toggle-task'])
 
 const DATE_FORMAT = 'dd.MM.yyyy HH:mm:ss'
 
@@ -111,12 +137,12 @@ const formatDateTime = (value?: string | Date) => {
   return format(date, DATE_FORMAT)
 }
 
-const getColumnValue = (task: Task, column: ColumnDef) => {
+const getColumnValue = (task: DisplayTask, column: ColumnDef) => {
   if (column.formatter) return column.formatter(task)
   return (task as Record<string, unknown>)[column.key] as string
 }
 
-const rowClass = (task: Task) => {
+const rowClass = (task: DisplayTask) => {
   const classes: string[] = []
   if (task.id === props.selectedTaskId) {
     classes.push('bg-blue-50', 'dark:bg-slate-700/60')
@@ -127,8 +153,13 @@ const rowClass = (task: Task) => {
   return classes.join(' ')
 }
 
-const handleRowClick = (event: { data: Task }) => {
+const handleRowClick = (event: { data: DisplayTask }) => {
   if (!event?.data) return
   emit('edit-task', event.data.id)
+}
+
+const toggleTask = (task: DisplayTask) => {
+  if (!task.isSummary) return
+  emit('toggle-task', task.id)
 }
 </script>

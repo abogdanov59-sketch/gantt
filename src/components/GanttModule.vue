@@ -6,14 +6,14 @@
         <div class="flex items-center gap-3">
           <ToggleButton
             v-model="showBaselines"
-            on-label="Show baselines"
-            off-label="Show baselines"
+            on-label="SHOW BASELINES"
+            off-label="SHOW BASELINES"
             :pt="toggleButtonPt"
           />
           <ToggleButton
             v-model="highlightCritical"
-            on-label="Highlight critical"
-            off-label="Highlight critical"
+            on-label="HIGHLIGHT CRITICAL"
+            off-label="HIGHLIGHT CRITICAL"
             :pt="toggleButtonPt"
           />
         </div>
@@ -21,19 +21,20 @@
       <div class="flex min-h-0 flex-1">
         <aside class="flex w-96 flex-col border-r border-slate-200 dark:border-slate-700">
           <GanttGrid
-            :tasks="calculation?.tasks ?? modelValue.tasks"
+            :tasks="visibleTasks"
             :loading="state.loading"
             :columns="columns"
             :messages="state.messages"
             :highlight-critical="highlightCritical"
             :selected-task-id="selectedTaskId"
+            @toggle-task="toggleTaskExpansion"
             @update:task="handleTaskUpdate"
             @edit-task="openEditor"
           />
         </aside>
         <section class="flex min-h-0 flex-1 flex-col overflow-hidden">
           <GanttTimeline
-            :tasks="calculation?.tasks ?? modelValue.tasks"
+            :tasks="visibleTasks"
             :dependencies="modelValue.dependencies"
             :project="modelValue.project"
             :options="optionsComputed"
@@ -56,34 +57,53 @@
           </div>
           <div class="space-y-1">
             <label class="text-sm font-medium text-slate-600 dark:text-slate-200" for="task-duration">Duration (minutes)</label>
-            <InputNumber
-              id="task-duration"
-              v-model="editorForm.duration"
-              input-class="w-full"
-              :min="0"
-              @update:model-value="handleDurationInput"
-            />
-          </div>
-          <div class="space-y-1">
-            <label class="text-sm font-medium text-slate-600 dark:text-slate-200">Start</label>
-            <Calendar v-model="editorForm.start" show-time hour-format="24" class="w-full" date-format="dd.mm.yy" />
-          </div>
-          <div class="space-y-1">
-            <label class="text-sm font-medium text-slate-600 dark:text-slate-200">Finish</label>
-            <Calendar v-model="editorForm.finish" show-time hour-format="24" class="w-full" date-format="dd.mm.yy" />
-          </div>
-        </div>
-        <div class="space-y-1">
-          <label class="text-sm font-medium text-slate-600 dark:text-slate-200">Predecessors</label>
-          <MultiSelect
-            v-model="editorForm.dependencies"
-            :options="dependencyChoices"
-            option-label="name"
-            option-value="id"
-            display="chip"
-            class="w-full"
+          <InputNumber
+            id="task-duration"
+            v-model="editorForm.duration"
+            input-class="w-full"
+            :min="0"
+            :disabled="editorIsSummary"
+            @update:model-value="handleDurationInput"
           />
         </div>
+        <div class="space-y-1">
+          <label class="text-sm font-medium text-slate-600 dark:text-slate-200">Start</label>
+          <Calendar
+            v-model="editorForm.start"
+            show-time
+            hour-format="24"
+            class="w-full"
+            date-format="dd.mm.yy"
+            :disabled="editorIsSummary"
+          />
+        </div>
+        <div class="space-y-1">
+          <label class="text-sm font-medium text-slate-600 dark:text-slate-200">Finish</label>
+          <Calendar
+            v-model="editorForm.finish"
+            show-time
+            hour-format="24"
+            class="w-full"
+            date-format="dd.mm.yy"
+            :disabled="editorIsSummary"
+          />
+        </div>
+      </div>
+      <p v-if="editorIsSummary" class="text-xs text-slate-500">
+        Dates and duration are derived from the summary task's children.
+      </p>
+      <div class="space-y-1">
+        <label class="text-sm font-medium text-slate-600 dark:text-slate-200">Predecessors</label>
+        <MultiSelect
+          v-model="editorForm.dependencies"
+          :options="dependencyChoices"
+          option-label="name"
+          option-value="id"
+          display="chip"
+          class="w-full"
+          :disabled="editorIsSummary"
+        />
+      </div>
         <ul v-if="editorErrors.length" class="space-y-1 rounded-md border border-rose-300 bg-rose-50 p-3 text-sm text-rose-700">
           <li v-for="error in editorErrors" :key="error">{{ error }}</li>
         </ul>
@@ -100,6 +120,7 @@
 import { computed, reactive, ref, watch, type PropType } from 'vue'
 import type {
   ColumnDef,
+  DisplayTask,
   GanttModelValue,
   ResolvedGanttOptions,
   SchedulerOptions,
@@ -110,6 +131,7 @@ import GanttGrid from './GanttGrid.vue'
 import GanttTimeline from './GanttTimeline.vue'
 import { useGanttApi } from '@/composables/useGanttApi'
 import { useGanttState } from '@/composables/useGanttState'
+import { createTaskHierarchy, flattenTasks } from '@/utils/taskHierarchy'
 import ToggleButton from 'primevue/togglebutton'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
@@ -170,11 +192,16 @@ const optionsComputed = computed<ResolvedGanttOptions>(() => ({
   showCritical: highlightCritical.value
 }))
 
-const modelRef = ref(props.modelValue)
+const normalizeModel = (value: GanttModelValue): GanttModelValue => ({
+  ...value,
+  tasks: flattenTasks(value.tasks)
+})
+
+const modelRef = ref<GanttModelValue>(normalizeModel(props.modelValue))
 watch(
   () => props.modelValue,
   (value) => {
-    modelRef.value = value
+    modelRef.value = normalizeModel(value)
   }
 )
 
@@ -191,7 +218,16 @@ const { state, recalculate, getTaskById } = useGanttState({
 
 const calculation = computed(() => state.calculation)
 
-const currentTasks = computed(() => calculation.value?.tasks ?? modelRef.value.tasks)
+const currentTasks = computed<Task[]>(
+  () => calculation.value?.tasks ?? modelRef.value.tasks
+)
+
+const expansionState = reactive(new Map<string, boolean>())
+const hierarchy = computed(() => createTaskHierarchy(currentTasks.value, expansionState))
+const hierarchyRows = computed(() => hierarchy.value.rows)
+const visibleTasks = computed<DisplayTask[]>(() => hierarchy.value.visibleRows)
+const taskMap = computed(() => hierarchy.value.byId)
+const leafTasks = computed(() => hierarchyRows.value.filter((task) => !task.isSummary))
 
 const selectedTaskId = ref<string | null>(null)
 const editorVisible = ref(false)
@@ -206,10 +242,16 @@ const editorForm = reactive({
 })
 
 const dependencyChoices = computed(() =>
-  currentTasks.value
+  leafTasks.value
     .filter((task) => task.id !== editorForm.id)
     .map((task) => ({ id: task.id, name: task.name }))
 )
+
+const editorTask = computed(() =>
+  editorForm.id ? taskMap.value.get(editorForm.id) ?? null : null
+)
+
+const editorIsSummary = computed(() => editorTask.value?.isSummary ?? false)
 
 const toggleButtonPt = {
   root: { class: 'px-3 py-2 text-sm font-medium uppercase tracking-wide' }
@@ -270,7 +312,7 @@ const handleTaskUpdate = (task: Task) => {
 
 const openEditor = (taskId: string) => {
   selectedTaskId.value = taskId
-  const task = getTaskById(taskId) ?? modelRef.value.tasks.find((item) => item.id === taskId)
+  const task = taskMap.value.get(taskId) ?? getTaskById(taskId) ?? modelRef.value.tasks.find((item) => item.id === taskId)
   if (!task) return
   editorErrors.value = []
   editorForm.id = task.id
@@ -278,9 +320,11 @@ const openEditor = (taskId: string) => {
   editorForm.start = task.start ? new Date(task.start) : null
   editorForm.finish = task.finish ? new Date(task.finish) : null
   editorForm.duration = task.duration ?? 0
-  editorForm.dependencies = modelRef.value.dependencies
-    .filter((dependency) => dependency.successorId === taskId)
-    .map((dependency) => dependency.predecessorId)
+  editorForm.dependencies = editorIsSummary.value
+    ? []
+    : modelRef.value.dependencies
+        .filter((dependency) => dependency.successorId === taskId)
+        .map((dependency) => dependency.predecessorId)
   editorVisible.value = true
 }
 
@@ -304,6 +348,7 @@ const editorHeader = computed(() => {
 })
 
 const handleDurationInput = (value: number | null) => {
+  if (editorIsSummary.value) return
   const sanitized = Math.max(0, value ?? 0)
   editorForm.duration = sanitized
   if (editorForm.start) {
@@ -315,6 +360,7 @@ const handleDurationInput = (value: number | null) => {
 watch(
   () => [editorForm.start, editorForm.finish],
   () => {
+    if (editorIsSummary.value) return
     if (!editorForm.start || !editorForm.finish) return
     const diff = Math.max(0, Math.round((editorForm.finish.getTime() - editorForm.start.getTime()) / 60000))
     editorForm.duration = diff
@@ -326,17 +372,28 @@ const saveTask = () => {
   if (!editorForm.name.trim()) {
     errors.push('Task name is required.')
   }
-  if (!editorForm.start) {
-    errors.push('Start date is required.')
-  }
-  if (!editorForm.finish) {
-    errors.push('Finish date is required.')
-  }
-  if (editorForm.start && editorForm.finish && editorForm.finish < editorForm.start) {
-    errors.push('Finish date must be after the start date.')
+  if (!editorIsSummary.value) {
+    if (!editorForm.start) {
+      errors.push('Start date is required.')
+    }
+    if (!editorForm.finish) {
+      errors.push('Finish date is required.')
+    }
+    if (editorForm.start && editorForm.finish && editorForm.finish < editorForm.start) {
+      errors.push('Finish date must be after the start date.')
+    }
   }
   editorErrors.value = errors
   if (errors.length) {
+    return
+  }
+
+  if (editorIsSummary.value) {
+    api.updateTask(editorForm.id, {
+      name: editorForm.name
+    })
+    void recalculate()
+    closeEditor()
     return
   }
 
@@ -377,6 +434,12 @@ const saveTask = () => {
 
   void recalculate()
   closeEditor()
+}
+
+const toggleTaskExpansion = (taskId: string) => {
+  const task = taskMap.value.get(taskId)
+  if (!task?.isSummary) return
+  expansionState.set(taskId, !task.isExpanded)
 }
 
 const exposeApi = {
