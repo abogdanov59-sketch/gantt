@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ER Diagram Styling Demo</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="app-shell__header">
+        <div class="brand">
+          <span class="brand__dot"></span>
+          <span class="brand__name">stery</span>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn--ghost">Сохранить</button>
+          <div class="user-avatar">АН</div>
+        </div>
+      </header>
+
+      <main class="layout">
+        <aside class="panel panel--left">
+          <div class="panel__section">
+            <h2 class="panel__title">Таблицы</h2>
+            <ul class="panel-list">
+              <li class="panel-list__item is-active">
+                <span class="panel-list__badge">1</span>
+                <span class="panel-list__name">Table_1</span>
+              </li>
+              <li class="panel-list__item">
+                <span class="panel-list__badge">2</span>
+                <span class="panel-list__name">Table_2</span>
+              </li>
+              <li class="panel-list__item">
+                <span class="panel-list__badge">3</span>
+                <span class="panel-list__name">Table_3</span>
+              </li>
+            </ul>
+          </div>
+          <button class="panel__cta">+ Добавить поле</button>
+        </aside>
+
+        <section class="canvas">
+          <div class="canvas__grid"></div>
+          <div class="canvas__layer canvas__layer--shade" style="left: 24px; top: 48px; width: 540px; height: 360px"></div>
+          <div class="canvas__layer canvas__layer--selection" style="left: 312px; top: 204px; width: 240px; height: 180px"></div>
+
+          <article class="er-card" style="left: 132px; top: 112px">
+            <header class="er-card__header">
+              <h3 class="er-card__title">Table_1</h3>
+              <div class="er-card__status">id: 167539400321</div>
+              <div class="er-card__actions">
+                <span class="er-icon er-icon--note" aria-hidden="true"></span>
+                <span class="er-icon er-icon--more" aria-hidden="true"></span>
+              </div>
+            </header>
+            <section class="er-card__body">
+              <div class="er-attribute">
+                <span class="er-attribute__dot"></span>
+                <div class="er-attribute__content">
+                  <span class="er-attribute__name">timestamp</span>
+                  <span class="er-attribute__type">datetime</span>
+                </div>
+              </div>
+              <div class="er-attribute">
+                <span class="er-attribute__dot"></span>
+                <div class="er-attribute__content">
+                  <span class="er-attribute__name">geom</span>
+                  <span class="er-attribute__type">geometrycollection</span>
+                </div>
+              </div>
+              <div class="er-card__note">
+                <p>Связана со справочником «Тип события»</p>
+                <span class="er-card__link">Открыть словарь</span>
+              </div>
+            </section>
+          </article>
+
+          <article class="er-card" style="left: 420px; top: 60px">
+            <header class="er-card__header">
+              <h3 class="er-card__title">Table_3</h3>
+              <div class="er-card__status">активная</div>
+              <div class="er-card__actions">
+                <span class="er-icon er-icon--note" aria-hidden="true"></span>
+                <span class="er-icon er-icon--more" aria-hidden="true"></span>
+              </div>
+            </header>
+            <section class="er-card__body">
+              <div class="er-attribute">
+                <span class="er-attribute__dot"></span>
+                <div class="er-attribute__content">
+                  <span class="er-attribute__name">name</span>
+                  <span class="er-attribute__type">varchar(255)</span>
+                </div>
+              </div>
+              <div class="er-attribute">
+                <span class="er-attribute__dot"></span>
+                <div class="er-attribute__content">
+                  <span class="er-attribute__name">event</span>
+                  <span class="er-attribute__type">int4</span>
+                </div>
+              </div>
+              <div class="er-attribute er-attribute--inactive">
+                <span class="er-attribute__dot"></span>
+                <div class="er-attribute__content">
+                  <span class="er-attribute__name">archived_at</span>
+                  <span class="er-attribute__type">timestamp</span>
+                </div>
+              </div>
+            </section>
+          </article>
+
+          <article class="er-card" style="left: 120px; top: 340px">
+            <header class="er-card__header">
+              <h3 class="er-card__title">Table_2</h3>
+              <div class="er-card__status">черновик</div>
+              <div class="er-card__actions">
+                <span class="er-icon er-icon--note" aria-hidden="true"></span>
+                <span class="er-icon er-icon--more" aria-hidden="true"></span>
+              </div>
+            </header>
+            <section class="er-card__body">
+              <div class="er-attribute">
+                <span class="er-attribute__dot"></span>
+                <div class="er-attribute__content">
+                  <span class="er-attribute__name">timestamp</span>
+                  <span class="er-attribute__type">datetime</span>
+                </div>
+              </div>
+              <div class="er-attribute">
+                <span class="er-attribute__dot"></span>
+                <div class="er-attribute__content">
+                  <span class="er-attribute__name">geom</span>
+                  <span class="er-attribute__type">geometrycollection</span>
+                </div>
+              </div>
+            </section>
+          </article>
+
+          <svg class="canvas__connections" viewBox="0 0 900 600" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="arrow" markerWidth="12" markerHeight="12" refX="6" refY="6" orient="auto" markerUnits="strokeWidth">
+                <path d="M2 2L10 6L2 10Z" fill="#5F6B7C" />
+              </marker>
+            </defs>
+            <path d="M328 188 C360 188 408 188 440 120" class="relation relation--solid" />
+            <path d="M180 348 C240 348 300 348 360 240" class="relation relation--dashed" stroke-dasharray="6 6" />
+            <g class="relation-node" transform="translate(328 188)">
+              <circle r="8" />
+            </g>
+            <g class="relation-node" transform="translate(440 120)">
+              <circle r="8" />
+            </g>
+            <g class="relation-node relation-node--terminal" transform="translate(360 240)">
+              <circle r="10" />
+              <circle r="4" />
+            </g>
+            <g class="relation-node relation-node--terminal" transform="translate(180 348)">
+              <circle r="10" />
+              <circle r="4" />
+            </g>
+            <path d="M360 240 C400 240 460 240 520 160" class="relation relation--arrow" marker-end="url(#arrow)" />
+          </svg>
+        </section>
+
+        <aside class="panel panel--right">
+          <div class="panel__section">
+            <h2 class="panel__title">Информация</h2>
+            <div class="info-card">
+              <div class="info-card__header">
+                <span class="info-card__label">Тип</span>
+                <span class="info-card__value">Справочник</span>
+              </div>
+              <p class="info-card__description">
+                Узлы можно перемещать, добавлять связи и управлять атрибутами прямо на полотне.
+              </p>
+            </div>
+          </div>
+          <div class="panel__section">
+            <h2 class="panel__title">ИИ-помощник</h2>
+            <div class="assistant-card">
+              <div class="assistant-card__badge">Новое</div>
+              <p class="assistant-card__message">
+                ИИ подскажет, какие связи стоит проверить, а также найдёт потенциальные циклы.
+              </p>
+              <button class="btn btn--primary">Запросить помощь</button>
+            </div>
+          </div>
+        </aside>
+      </main>
+    </div>
+    <script src="script.js"></script>
+  </body>
+</html>
