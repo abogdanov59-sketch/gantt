@@ -1,0 +1,64 @@
+[versions]
+kotlin = "1.9.24"
+ktor = "3.0.1"
+logback = "1.5.11"
+serialization = "1.7.3"
+coroutines = "1.9.0"
+jackson = "2.17.2"
+flowable = "7.0.0"
+fabric = "2.5.2"
+postgres = "42.7.4"
+kafka = "3.8.0"
+minio = "8.5.7"
+slf4j = "2.0.16"
+testcontainers = "1.20.3"
+commonsCodec = "1.17.1"
+h2 = "2.3.232"
+
+[libraries]
+ktor-server-core = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor" }
+ktor-server-netty = { module = "io.ktor:ktor-server-netty-jvm", version.ref = "ktor" }
+ktor-server-call-logging = { module = "io.ktor:ktor-server-call-logging", version.ref = "ktor" }
+ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation", version.ref = "ktor" }
+ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-server-status-pages = { module = "io.ktor:ktor-server-status-pages", version.ref = "ktor" }
+ktor-server-auth = { module = "io.ktor:ktor-server-auth", version.ref = "ktor" }
+ktor-server-auth-jwt = { module = "io.ktor:ktor-server-auth-jwt", version.ref = "ktor" }
+ktor-server-tests = { module = "io.ktor:ktor-server-tests-jvm", version.ref = "ktor" }
+ktor-client-core = { module = "io.ktor:ktor-client-core-jvm", version.ref = "ktor" }
+ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
+logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
+kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version = "0.6.1" }
+jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
+jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
+flowable-spring-boot-starter = { module = "org.flowable:flowable-spring-boot-starter-process", version.ref = "flowable" }
+flowable-dmn = { module = "org.flowable:flowable-dmn-engine", version.ref = "flowable" }
+flowable-engine = { module = "org.flowable:flowable-engine", version.ref = "flowable" }
+fabric-sdk = { module = "org.hyperledger.fabric:fabric-gateway-java", version.ref = "fabric" }
+fabric-ca = { module = "org.hyperledger.fabric:fabric-ca-client", version.ref = "fabric" }
+postgresql = { module = "org.postgresql:postgresql", version.ref = "postgres" }
+kafka-clients = { module = "org.apache.kafka:kafka-clients", version.ref = "kafka" }
+minio = { module = "io.minio:minio", version.ref = "minio" }
+slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+testcontainers = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers" }
+testcontainers-junit = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
+testcontainers-postgres = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
+testcontainers-kafka = { module = "org.testcontainers:kafka", version.ref = "testcontainers" }
+commons-codec = { module = "commons-codec:commons-codec", version.ref = "commonsCodec" }
+h2 = { module = "com.h2database:h2", version.ref = "h2" }
+
+[bundles]
+ktor-server = ["ktor-server-core", "ktor-server-netty", "ktor-server-call-logging", "ktor-server-content-negotiation", "ktor-serialization-kotlinx-json", "ktor-server-status-pages", "ktor-server-auth"]
+ktor-client = ["ktor-client-core", "ktor-client-cio", "ktor-client-content-negotiation", "ktor-client-logging"]
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
+shadow = { id = "io.github.goooler.shadow", version = "8.1.8" }
+spring-boot = { id = "org.springframework.boot", version = "3.3.4" }
+spring-dependency-management = { id = "io.spring.dependency-management", version = "1.1.5" }
