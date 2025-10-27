@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/"
+             xmlns:feel="https://www.omg.org/spec/DMN/20191111/FEEL/"
+             id="approvalRules"
+             name="ApprovalRules"
+             namespace="http://example.com/workflow">
+    <decision id="approvalDecision" name="Approval Decision">
+        <variable name="decision" typeRef="string" />
+        <decisionTable hitPolicy="FIRST">
+            <input id="input1">
+                <inputExpression typeRef="string">
+                    <text>priority</text>
+                </inputExpression>
+            </input>
+            <output id="output1" name="decision" typeRef="string" />
+            <rule>
+                <inputEntry>
+                    <text>"high"</text>
+                </inputEntry>
+                <outputEntry>
+                    <text>"MANUAL"</text>
+                </outputEntry>
+            </rule>
+            <rule>
+                <inputEntry>
+                    <text>-</text>
+                </inputEntry>
+                <outputEntry>
+                    <text>"AUTO"</text>
+                </outputEntry>
+            </rule>
+        </decisionTable>
+    </decision>
+</definitions>

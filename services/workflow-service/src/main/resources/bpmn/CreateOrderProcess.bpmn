@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+             xmlns:flowable="http://flowable.org/bpmn"
+             typeLanguage="http://www.w3.org/2001/XMLSchema"
+             expressionLanguage="http://www.w3.org/1999/XPath"
+             targetNamespace="http://example.com/workflow">
+    <process id="createOrderProcess" name="Create Order Process" isExecutable="true">
+        <startEvent id="start" name="Start" />
+        <serviceTask id="encrypt" name="Encrypt Asset" flowable:type="external" flowable:topic="vault.encrypt" />
+        <userTask id="approve" name="Approve Order" />
+        <endEvent id="end" name="Finished" />
+        <sequenceFlow id="flow1" sourceRef="start" targetRef="encrypt" />
+        <sequenceFlow id="flow2" sourceRef="encrypt" targetRef="approve" />
+        <sequenceFlow id="flow3" sourceRef="approve" targetRef="end" />
+    </process>
+</definitions>
